@@ -1,5 +1,6 @@
 package scoreboard;
 
+import io.scoreboard.IllegalScoreboardArgumentException;
 import io.scoreboard.Match;
 import io.scoreboard.ScoreBoard;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,20 +65,20 @@ class ScoreBoardTest {
         void shouldThrowWhenMatchAlreadyInProgress() {
             board.startMatch("Mexico", "Canada");
             assertThatThrownBy(() -> board.startMatch("Mexico", "Canada"))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(IllegalScoreboardArgumentException.class);
         }
 
         @Test
         void shouldThrowWhenTeamsAreTheSame() {
             assertThatThrownBy(() -> board.startMatch("Mexico", "Mexico"))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(IllegalScoreboardArgumentException.class);
         }
 
         @ParameterizedTest
         @MethodSource("scoreboard.ScoreBoardTest#invalidTeamNames")
         void shouldThrowWhenTeamNameIsInvalid(String homeTeam, String awayTeam) {
             assertThatThrownBy(() -> board.startMatch(homeTeam, awayTeam))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(IllegalScoreboardArgumentException.class)
                     .hasMessageContaining("cannot be null or blank");
         }
     }
@@ -94,7 +95,7 @@ class ScoreBoardTest {
         @Test
         void shouldThrowWhenMatchNotFound() {
             assertThatThrownBy(() -> board.finishMatch("Mexico", "Canada"))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(IllegalScoreboardArgumentException.class);
         }
 
         @Test
@@ -118,7 +119,7 @@ class ScoreBoardTest {
         @MethodSource("scoreboard.ScoreBoardTest#invalidTeamNames")
         void shouldThrowWhenTeamNameIsInvalid(String homeTeam, String awayTeam) {
             assertThatThrownBy(() -> board.finishMatch(homeTeam, awayTeam))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(IllegalScoreboardArgumentException.class)
                     .hasMessageContaining("cannot be null or blank");
         }
     }
@@ -137,14 +138,23 @@ class ScoreBoardTest {
         @Test
         void shouldThrowWhenMatchNotFound() {
             assertThatThrownBy(() -> board.updateScore("Mexico", "Canada", 1, 0))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(IllegalScoreboardArgumentException.class);
         }
 
-        @Test
-        void shouldThrowWhenScoreIsNegative() {
+        @ParameterizedTest
+        @MethodSource
+        void shouldThrowWhenScoreIsNegative(int homeScore, int awayScore) {
             board.startMatch("Mexico", "Canada");
-            assertThatThrownBy(() -> board.updateScore("Mexico", "Canada", -1, 0))
-                    .isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> board.updateScore("Mexico", "Canada", homeScore, awayScore))
+                    .isInstanceOf(IllegalScoreboardArgumentException.class);
+        }
+
+        static Stream<Arguments> shouldThrowWhenScoreIsNegative() {
+            return Stream.of(
+                    Arguments.of(-1, 0),
+                    Arguments.of(0, -5),
+                    Arguments.of(-1, -5)
+            );
         }
 
         @Test
@@ -160,12 +170,21 @@ class ScoreBoardTest {
             assertThat(spain.awayTeamScore()).isZero();
         }
 
-        @Test
-        void shouldThrowWhenScoreIsLowerThanCurrent() {
+        @ParameterizedTest
+        @MethodSource
+        void shouldThrowWhenScoreIsLowerThanCurrent(int homeScore, int awayScore) {
             board.startMatch("Mexico", "Canada");
             board.updateScore("Mexico", "Canada", 2, 1);
-            assertThatThrownBy(() -> board.updateScore("Mexico", "Canada", 1, 0))
-                    .isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> board.updateScore("Mexico", "Canada", homeScore, awayScore))
+                    .isInstanceOf(IllegalScoreboardArgumentException.class);
+        }
+
+        static Stream<Arguments> shouldThrowWhenScoreIsLowerThanCurrent() {
+            return Stream.of(
+                    Arguments.of(1, 0),
+                    Arguments.of(1, 1),
+                    Arguments.of(2, 0)
+            );
         }
 
         @Test
@@ -173,14 +192,14 @@ class ScoreBoardTest {
             board.startMatch("Mexico", "Canada");
             board.updateScore("Mexico", "Canada", 1, 0);
             assertThatThrownBy(() -> board.updateScore("Mexico", "Canada", 1, 0))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(IllegalScoreboardArgumentException.class);
         }
 
         @ParameterizedTest
         @MethodSource("scoreboard.ScoreBoardTest#invalidTeamNames")
         void shouldThrowWhenTeamNameIsInvalid(String homeTeam, String awayTeam) {
             assertThatThrownBy(() -> board.updateScore(homeTeam, awayTeam, 1, 0))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(IllegalScoreboardArgumentException.class)
                     .hasMessageContaining("cannot be null or blank");
         }
     }

@@ -13,34 +13,44 @@ public class ScoreBoard {
 
     public void finishMatch(final String homeTeam, final String awayTeam) {
         validateTeamNames(homeTeam, awayTeam);
-        final MatchKey key = new MatchKey(homeTeam, awayTeam);
-        if (!matches.containsKey(key))
-            throw new IllegalArgumentException("Match not found");
+        final MatchKey key = findMatchKey(homeTeam, awayTeam);
         matches.remove(key);
     }
 
     public void updateScore(final String homeTeam, final String awayTeam, final int homeScore, final int awayScore) {
         validateTeamNames(homeTeam, awayTeam);
-        final MatchKey key = new MatchKey(homeTeam, awayTeam);
-        if (!matches.containsKey(key))
-            throw new IllegalArgumentException("Match not found");
+        final MatchKey key = findMatchKey(homeTeam, awayTeam);
 
         final Match current = matches.get(key);
-        if (current.homeTeamScore() == homeScore && current.awayTeamScore() == awayScore)
-            throw new IllegalArgumentException("Score is the same as current");
 
-        if (homeScore < current.homeTeamScore() || awayScore < current.awayTeamScore())
-            throw new IllegalArgumentException("Score cannot be lower than current");
+        validateScore(current, homeScore, awayScore);
 
         matches.put(key, new Match(homeTeam, awayTeam, homeScore, awayScore));
     }
 
     public List<Match> getSummary() {
-        final List<Match> insertionOrdered = new ArrayList<>(matches.values());
-        Collections.reverse(insertionOrdered);
-        return insertionOrdered.stream()
+        return sortedByScoreAndRecency(new ArrayList<>(matches.values()));
+    }
+
+    private List<Match> sortedByScoreAndRecency(List<Match> matches) {
+        Collections.reverse(matches);
+        return matches.stream()
                 .sorted(Comparator.comparingInt(Match::totalScore).reversed())
                 .toList();
+    }
+
+    private MatchKey findMatchKey(final String homeTeam, final String awayTeam) {
+        final MatchKey key = new MatchKey(homeTeam, awayTeam);
+
+        validateMatchExists(key);
+
+        return key;
+    }
+
+    private void validateMatchExists(final MatchKey key) {
+        if (!matches.containsKey(key)) {
+            throw new IllegalScoreboardArgumentException(ScoreboardError.MATCH_NOT_FOUND);
+        }
     }
 
     private void validateNewMatch(final String homeTeam, final String awayTeam) {
@@ -50,19 +60,36 @@ public class ScoreBoard {
     }
 
     private void validateMatchProgress(String homeTeam, String awayTeam) {
-        if (matches.containsKey(new MatchKey(homeTeam, awayTeam)))
-            throw new IllegalArgumentException("Match already in progress");
+        if (matches.containsKey(new MatchKey(homeTeam, awayTeam))) {
+            throw new IllegalScoreboardArgumentException(ScoreboardError.MATCH_ALREADY_IN_PROGRESS);
+        }
     }
 
-    private void validateSameNames(final String homeTeam, final String awayTeam) {
-        if (homeTeam.equals(awayTeam))
-            throw new IllegalArgumentException("Home and away team cannot be the same");
+    private static void validateSameNames(final String homeTeam, final String awayTeam) {
+        if (homeTeam.equals(awayTeam)) {
+            throw new IllegalScoreboardArgumentException(ScoreboardError.TEAMS_ARE_THE_SAME);
+        }
     }
 
-    private void validateTeamNames(final String homeTeam, final String awayTeam) {
-        if (homeTeam == null || homeTeam.isBlank())
-            throw new IllegalArgumentException("Home team name cannot be null or blank");
-        if (awayTeam == null || awayTeam.isBlank())
-            throw new IllegalArgumentException("Away team name cannot be null or blank");
+    private static void validateTeamNames(final String homeTeam, final String awayTeam) {
+        if (homeTeam == null || homeTeam.isBlank()) {
+            throw new IllegalScoreboardArgumentException(ScoreboardError.HOME_TEAM_INVALID);
+        }
+        if (awayTeam == null || awayTeam.isBlank()) {
+            throw new IllegalScoreboardArgumentException(ScoreboardError.AWAY_TEAM_INVALID);
+        }
+    }
+
+    private static void validateScore(final Match current, final int homeScore, final int awayScore) {
+        int homeTeamScore = current.homeTeamScore();
+        int awayTeamScore = current.awayTeamScore();
+
+        if (homeTeamScore == homeScore && awayTeamScore == awayScore) {
+            throw new IllegalScoreboardArgumentException(ScoreboardError.SCORE_IS_THE_SAME);
+        }
+
+        if (homeScore < homeTeamScore || awayScore < awayTeamScore) {
+            throw new IllegalScoreboardArgumentException(ScoreboardError.SCORE_IS_LOWER_THAN_CURRENT);
+        }
     }
 }
