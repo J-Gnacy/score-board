@@ -1,5 +1,6 @@
 package scoreboard;
 
+import io.scoreboard.IllegalScoreboardArgumentException;
 import io.scoreboard.Match;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,6 +14,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class MatchTest {
 
+    @ParameterizedTest
+    @MethodSource("scoreboard.TeamNameValidatorTestData#invalidTeamNames")
+    void shouldThrowWhenTeamNameIsInvalid(String homeTeam, String awayTeam) {
+        assertThatThrownBy(() -> new Match(homeTeam, awayTeam))
+                .isInstanceOf(IllegalScoreboardArgumentException.class)
+                .hasMessageContaining("cannot be null or blank");
+    }
+
     @Test
     void shouldCreateMatchWithZeroScores() {
         Match match = new Match("Mexico", "Canada");
@@ -24,7 +33,7 @@ class MatchTest {
     @MethodSource
     void shouldThrowWhenScoreIsNegative(int homeScore, int awayScore) {
         assertThatThrownBy(() -> new Match("Mexico", "Canada", homeScore, awayScore))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalScoreboardArgumentException.class);
     }
 
     static Stream<Arguments> shouldThrowWhenScoreIsNegative() {

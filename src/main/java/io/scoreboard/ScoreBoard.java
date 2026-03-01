@@ -2,6 +2,9 @@ package io.scoreboard;
 
 import java.util.*;
 
+import static io.scoreboard.TeamNameValidator.validateSameNames;
+import static io.scoreboard.TeamNameValidator.validateTeamNames;
+
 public class ScoreBoard {
     private final Map<MatchKey, Match> matches = new LinkedHashMap<>();
 
@@ -23,7 +26,7 @@ public class ScoreBoard {
 
         final Match current = matches.get(key);
 
-        validateScore(current, homeScore, awayScore);
+        validateScoreUpdate(current, homeScore, awayScore);
 
         matches.put(key, new Match(homeTeam, awayTeam, homeScore, awayScore));
     }
@@ -65,22 +68,7 @@ public class ScoreBoard {
         }
     }
 
-    private static void validateSameNames(final String homeTeam, final String awayTeam) {
-        if (homeTeam.equals(awayTeam)) {
-            throw new IllegalScoreboardArgumentException(ScoreboardError.TEAMS_ARE_THE_SAME, homeTeam, awayTeam);
-        }
-    }
-
-    private static void validateTeamNames(final String homeTeam, final String awayTeam) {
-        if (homeTeam == null || homeTeam.isBlank()) {
-            throw new IllegalScoreboardArgumentException(ScoreboardError.HOME_TEAM_INVALID);
-        }
-        if (awayTeam == null || awayTeam.isBlank()) {
-            throw new IllegalScoreboardArgumentException(ScoreboardError.AWAY_TEAM_INVALID);
-        }
-    }
-
-    private static void validateScore(final Match current, final int homeScore, final int awayScore) {
+    private static void validateScoreUpdate(final Match current, final int homeScore, final int awayScore) {
         int currentHomeScore = current.homeTeamScore();
         int currentAwayScore = current.awayTeamScore();
 

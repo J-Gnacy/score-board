@@ -20,17 +20,6 @@ class ScoreBoardTest {
 
     private ScoreBoard board;
 
-    private static final String INVALID_TEAM_NAME = "  ";
-
-    static Stream<Arguments> invalidTeamNames() {
-        return Stream.of(
-                Arguments.of(null, "Canada"),
-                Arguments.of(INVALID_TEAM_NAME, "Canada"),
-                Arguments.of("Mexico", null),
-                Arguments.of("Mexico", INVALID_TEAM_NAME)
-        );
-    }
-
     @BeforeEach
     void setUp() {
         board = new ScoreBoard();
@@ -75,7 +64,7 @@ class ScoreBoardTest {
         }
 
         @ParameterizedTest
-        @MethodSource("scoreboard.ScoreBoardTest#invalidTeamNames")
+        @MethodSource("scoreboard.TeamNameValidatorTestData#invalidTeamNames")
         void shouldThrowWhenTeamNameIsInvalid(String homeTeam, String awayTeam) {
             assertThatThrownBy(() -> board.startMatch(homeTeam, awayTeam))
                     .isInstanceOf(IllegalScoreboardArgumentException.class)
@@ -116,7 +105,7 @@ class ScoreBoardTest {
         }
 
         @ParameterizedTest
-        @MethodSource("scoreboard.ScoreBoardTest#invalidTeamNames")
+        @MethodSource("scoreboard.TeamNameValidatorTestData#invalidTeamNames")
         void shouldThrowWhenTeamNameIsInvalid(String homeTeam, String awayTeam) {
             assertThatThrownBy(() -> board.finishMatch(homeTeam, awayTeam))
                     .isInstanceOf(IllegalScoreboardArgumentException.class)
@@ -196,7 +185,7 @@ class ScoreBoardTest {
         }
 
         @ParameterizedTest
-        @MethodSource("scoreboard.ScoreBoardTest#invalidTeamNames")
+        @MethodSource("scoreboard.TeamNameValidatorTestData#invalidTeamNames")
         void shouldThrowWhenTeamNameIsInvalid(String homeTeam, String awayTeam) {
             assertThatThrownBy(() -> board.updateScore(homeTeam, awayTeam, 1, 0))
                     .isInstanceOf(IllegalScoreboardArgumentException.class)
