@@ -11,4 +11,9 @@ public class IllegalScoreboardArgumentException extends IllegalArgumentException
         super(error.getMessage());
         this.error = error;
     }
+
+    public IllegalScoreboardArgumentException(ScoreboardError error, Object... args) {
+        super(error.format(args));
+        this.error = error;
+    }
 }

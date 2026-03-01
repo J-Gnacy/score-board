@@ -49,7 +49,7 @@ public class ScoreBoard {
 
     private void validateMatchExists(final MatchKey key) {
         if (!matches.containsKey(key)) {
-            throw new IllegalScoreboardArgumentException(ScoreboardError.MATCH_NOT_FOUND);
+            throw new IllegalScoreboardArgumentException(ScoreboardError.MATCH_NOT_FOUND, key.homeTeam(), key.awayTeam());
         }
     }
 
@@ -61,13 +61,13 @@ public class ScoreBoard {
 
     private void validateMatchProgress(String homeTeam, String awayTeam) {
         if (matches.containsKey(new MatchKey(homeTeam, awayTeam))) {
-            throw new IllegalScoreboardArgumentException(ScoreboardError.MATCH_ALREADY_IN_PROGRESS);
+            throw new IllegalScoreboardArgumentException(ScoreboardError.MATCH_ALREADY_IN_PROGRESS, homeTeam, awayTeam);
         }
     }
 
     private static void validateSameNames(final String homeTeam, final String awayTeam) {
         if (homeTeam.equals(awayTeam)) {
-            throw new IllegalScoreboardArgumentException(ScoreboardError.TEAMS_ARE_THE_SAME);
+            throw new IllegalScoreboardArgumentException(ScoreboardError.TEAMS_ARE_THE_SAME, homeTeam, awayTeam);
         }
     }
 
@@ -81,15 +81,15 @@ public class ScoreBoard {
     }
 
     private static void validateScore(final Match current, final int homeScore, final int awayScore) {
-        int homeTeamScore = current.homeTeamScore();
-        int awayTeamScore = current.awayTeamScore();
+        int currentHomeScore = current.homeTeamScore();
+        int currentAwayScore = current.awayTeamScore();
 
-        if (homeTeamScore == homeScore && awayTeamScore == awayScore) {
-            throw new IllegalScoreboardArgumentException(ScoreboardError.SCORE_IS_THE_SAME);
+        if (currentHomeScore == homeScore && currentAwayScore == awayScore) {
+            throw new IllegalScoreboardArgumentException(ScoreboardError.SCORE_IS_THE_SAME, currentHomeScore, currentAwayScore, homeScore, awayScore);
         }
 
-        if (homeScore < homeTeamScore || awayScore < awayTeamScore) {
-            throw new IllegalScoreboardArgumentException(ScoreboardError.SCORE_IS_LOWER_THAN_CURRENT);
+        if (homeScore < currentHomeScore || awayScore < currentAwayScore) {
+            throw new IllegalScoreboardArgumentException(ScoreboardError.SCORE_IS_LOWER_THAN_CURRENT,  currentHomeScore, currentAwayScore, homeScore, awayScore);
         }
     }
 }
